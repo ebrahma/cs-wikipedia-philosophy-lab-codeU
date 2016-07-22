@@ -12,6 +12,7 @@ import org.jsoup.select.Elements;
 
 public class WikiPhilosophy {
 	
+	final static List<String> visitedLinks = new ArrayList<String>();
 	final static WikiFetcher wf = new WikiFetcher();
 	
 	/**
@@ -32,20 +33,56 @@ public class WikiPhilosophy {
         // some example code to get you started
 
 		String url = "https://en.wikipedia.org/wiki/Java_(programming_language)";
-		Elements paragraphs = wf.fetchWikipedia(url);
-
-		Element firstPara = paragraphs.get(0);
+		String finalStop = "https://en.wikipedia.org/wiki/Java_(programming_language)";
 		
-		Iterable<Node> iter = new WikiNodeIterable(firstPara);
-		for (Node node: iter) {
-			if (node instanceof TextNode) {
-				System.out.print(node);
-			}
-        }
-
-        // the following throws an exception so the test fails
-        // until you update the code
-        String msg = "Complete this lab by adding your code and removing this statement.";
-        throw new UnsupportedOperationException(msg);
+		traverseLinks(url, finalStop, 10);
+		
+//		Elements paragraphs = wf.fetchWikipedia(url);
+//
+//		Element firstPara = paragraphs.get(0);
+//		
+//		Iterable<Node> iter = new WikiNodeIterable(firstPara);
+//		for (Node node: iter) {
+//			if (node instanceof TextNode) {
+//				System.out.print(node);
+//			}
+//        }
+//
+//        // the following throws an exception so the test fails
+//        // until you update the code
+//        String msg = "Complete this lab by adding your code and removing this statement.";
+//        throw new UnsupportedOperationException(msg);
 	}
+	
+	public static void traverseLinks(String url, String finalStop, int maxIterations) throws IOException {
+		String currentUrl = url;
+		for(int i = 0; i < maxIterations; i++) {
+			if (visitedLinks.contains(currentUrl)) {
+				System.err.println("Error: Looping onto the same webpage.");
+				return;
+			} else {
+				visitedLinks.add(currentUrl);
+			}
+			
+			Elements para = wf.fetchWikipedia(currentUrl);
+			PageParser wp = new PageParser(para);
+			Element firstValidLink = wp.findFirstLink();
+			
+			if(firstValidLink == null) {
+				System.err.println("Page does not have any valid links");
+				return;
+			}
+			
+			System.out.println(firstValidLink.text());
+			
+			if(url.equals(finalStop)) {
+				System.out.println("Reached philosophy page!");
+				break;
+			}
+			
+			
+		}
+	}
+	
+	
 }
